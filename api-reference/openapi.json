@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "Zgłoś Scammera API",
+    "description": "Oficjalne API platformy Zgłoś Scammera - chroń innych przed oszustami w sieci",
     "license": {
       "name": "MIT"
     },
@@ -10,45 +10,30 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://zglosscammera.pl/api"
     }
   ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
+  "security": [],
   "paths": {
-    "/plants": {
+    "/scammers": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "description": "Pobiera listę wszystkich zweryfikowanych oszustów",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Lista oszustów",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/Scammer"
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "500": {
+            "description": "Błąd serwera",
             "content": {
               "application/json": {
                 "schema": {
@@ -58,15 +43,57 @@
             }
           }
         }
-      },
+      }
+    },
+    "/servers": {
+      "get": {
+        "description": "Pobiera listę wszystkich zweryfikowanych serwerów oszukujących",
+        "responses": {
+          "200": {
+            "description": "Lista serwerów oszukujących",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Server"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/legit": {
+      "get": {
+        "description": "Pobiera listę wszystkich zweryfikowanych zaufanych osób",
+        "responses": {
+          "200": {
+            "description": "Lista zaufanych osób",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegitUser"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checkUser": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "description": "Sprawdza czy użytkownik znajduje się w bazie danych",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Dane użytkownika do sprawdzenia",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/UserCheck"
               }
             }
           },
@@ -74,21 +101,11 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Wynik sprawdzenia",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/UserCheckResult"
                 }
               }
             }
@@ -96,57 +113,30 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    "/checkUserOnList": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "description": "Sprawdza czy użytkownik znajduje się na określonej liście",
         "requestBody": {
-          "description": "Plant added to the store",
+          "description": "Dane użytkownika i lista do sprawdzenia",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/UserListCheck"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Wynik sprawdzenia na liście",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCheckResult"
+                }
+              }
+            }
           }
         }
       }
@@ -154,63 +144,153 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Scammer": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "reportId": {
+            "type": "string",
+            "description": "Unikalny ID zgłoszenia"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "name": {
+            "type": "string",
+            "description": "Nick oszusta"
+          },
+          "id": {
+            "type": "string",
+            "description": "Discord ID oszusta"
+          },
+          "desc": {
+            "type": "string",
+            "description": "Powód zgłoszenia"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Czy zgłoszenie jest zweryfikowane"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data utworzenia zgłoszenia"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "Server": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string"
           },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+          "name": {
+            "type": "string",
+            "description": "Nazwa serwera"
+          },
+          "id": {
+            "type": "string",
+            "description": "Discord ID serwera"
+          },
+          "desc": {
+            "type": "string",
+            "description": "Powód zgłoszenia"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
-        ]
+        }
+      },
+      "LegitUser": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nick zaufanej osoby"
+          },
+          "id": {
+            "type": "string",
+            "description": "Discord ID zaufanej osoby"
+          },
+          "desc": {
+            "type": "string",
+            "description": "Powód zaufania"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserCheck": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Discord ID do sprawdzenia"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nick do sprawdzenia"
+          }
+        }
+      },
+      "UserListCheck": {
+        "type": "object",
+        "required": ["id", "list"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Discord ID do sprawdzenia"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nick do sprawdzenia"
+          },
+          "list": {
+            "type": "string",
+            "enum": ["scammers", "servers", "legit"],
+            "description": "Lista do sprawdzenia"
+          }
+        }
+      },
+      "UserCheckResult": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "Czy użytkownik został znaleziony"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["scammer", "legit", "server"],
+            "description": "Typ znalezionego wpisu"
+          },
+          "data": {
+            "type": "object",
+            "description": "Dane znalezionego wpisu"
+          }
+        }
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
         "properties": {
           "error": {
-            "type": "integer",
-            "format": "int32"
+            "type": "string",
+            "description": "Opis błędu"
           },
-          "message": {
-            "type": "string"
+          "reason": {
+            "type": "string",
+            "description": "Przyczyna błędu"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
       }
     }
   }

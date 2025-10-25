@@ -1,33 +1,127 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'Wprowadzenie do API'
+description: 'Oficjalna dokumentacja publicznego API platformy Zgłoś Scammera'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Czym jest API Zgłoś Scammera?
 
-## Welcome
+API Zgłoś Scammera to zestaw publicznych endpointów, które pozwalają na programistyczny dostęp do podstawowych funkcjonalności platformy. Możesz używać naszego API do integracji z własnymi aplikacjami, botami Discord lub innymi systemami.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Podstawowe informacje
+
+### Base URL
+```
+https://zglosscammera.pl/api
+```
+
+### Format odpowiedzi
+Wszystkie odpowiedzi API są zwracane w formacie JSON.
+
+### Kodowanie
+API używa kodowania UTF-8 dla wszystkich tekstów.
+
+## Publiczne endpointy
+
+Nasze API oferuje następujące publiczne endpointy:
+
+### Sprawdzanie osób
+- **POST /api/checkUser** - sprawdź czy użytkownik jest na liście oszustów/zaufanych
+- **POST /api/checkUserOnList** - sprawdź czy użytkownik jest na określonej liście
+
+### Listy danych
+- **GET /api/scammers** - pobierz listę wszystkich zweryfikowanych oszustów
+- **GET /api/servers** - pobierz listę wszystkich zweryfikowanych serwerów oszukujących
+- **GET /api/legit** - pobierz listę wszystkich zweryfikowanych zaufanych osób
+
+## Uwierzytelnianie
+
+### Publiczne endpointy
+Większość publicznych endpointów **nie wymaga** uwierzytelnienia. Możesz je wywoływać bezpośrednio bez tokenów.
+
+### Rate Limiting
+API ma wbudowane ograniczenia szybkości:
+- **100 żądań na minutę** dla endpointów odczytu
+- **Nagłówki odpowiedzi** zawierają informacje o limitach
+
+## Kody odpowiedzi HTTP
+
+### Sukces
+- **200 OK** - żądanie wykonane pomyślnie
+- **201 Created** - zasób został utworzony
+- **204 No Content** - żądanie wykonane, brak zawartości
+
+### Błędy klienta
+- **400 Bad Request** - nieprawidłowe żądanie
+- **404 Not Found** - zasób nie znaleziony
+- **429 Too Many Requests** - przekroczono limit żądań
+
+### Błędy serwera
+- **500 Internal Server Error** - błąd wewnętrzny serwera
+- **503 Service Unavailable** - usługa niedostępna
+
+## Przykłady użycia
+
+### Sprawdzenie użytkownika
+```javascript
+const checkUser = async (userId) => {
+  const response = await fetch(`/api/checkUser`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: userId
+    })
+  });
+  
+  return await response.json();
+};
+```
+
+### Pobranie listy oszustów
+```javascript
+const getScammers = async () => {
+  const response = await fetch('/api/scammers');
+  return await response.json();
+};
+```
+
+## Ograniczenia i wymagania
+
+### Dane zwracane
+- **Tylko zweryfikowane** zgłoszenia są publiczne
+- **Brak danych osobowych** - tylko nicki i ID Discord
+- **Filtrowane treści** - usunięte wulgaryzmy i wrażliwe dane
+
+### Ograniczenia dostępu
+- **Tylko odczyt** - brak możliwości modyfikacji danych
+- **Rate limiting** - ograniczenia szybkości żądań
+- **Caching** - dane mogą być buforowane
+
+## Wsparcie i kontakt
+
+### Dokumentacja
+- **Endpointy** - szczegółowe opisy każdego endpointu
+- **Przykłady** - gotowe fragmenty kodu
+- **Błędy** - opisy możliwych problemów
+
+### Wsparcie techniczne
+- **Discord**: [discord.gg/zglosscammera](https://discord.gg/zglosscammera)
+- **Email**: admin@zglosscammera.pl
+- **GitHub**: [github.com/zglosscammera](https://github.com/zglosscammera)
 
 <Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+  title="Sprawdź użytkownika"
+  icon="search"
+  href="/api-reference/endpoint/check-user"
 >
-  View the OpenAPI specification file
+  Rozpocznij od sprawdzania osób
 </Card>
 
-## Authentication
-
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
-
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+<Card
+  title="Pobierz listy"
+  icon="list"
+  href="/api-reference/endpoint/scammers"
+>
+  Zobacz dostępne listy danych
+</Card>

@@ -1,0 +1,235 @@
+---
+title: 'Lista oszustów'
+description: 'Endpoint do pobierania listy wszystkich zweryfikowanych oszustów'
+---
+
+## GET /api/scammers
+
+Pobiera listę wszystkich zweryfikowanych oszustów z bazy danych. Jest to publiczny endpoint, który nie wymaga uwierzytelnienia.
+
+### Parametry żądania
+
+Brak parametrów - endpoint zwraca wszystkie dostępne dane.
+
+### Przykład żądania
+
+```javascript
+const response = await fetch('/api/scammers');
+const scammers = await response.json();
+console.log(scammers);
+```
+
+### Odpowiedzi
+
+<ResponseField name="200" type="array">
+  Lista oszustów została pomyślnie pobrana
+</ResponseField>
+
+```json
+[
+  {
+    "reportId": "SCAM-1234",
+    "name": "oszust123",
+    "id": "123456789012345678",
+    "desc": "Oszukał mnie na konto Fortnite za 100 PLN",
+    "verified": true,
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  },
+  {
+    "reportId": "SCAM-1235", 
+    "name": "scammer456",
+    "id": "987654321098765432",
+    "desc": "Nie dostarczył konta Steam po płatności",
+    "verified": true,
+    "createdAt": "2024-01-16T14:20:00.000Z"
+  }
+]
+```
+
+<ResponseField name="500" type="object">
+  Błąd serwera
+</ResponseField>
+
+```json
+{
+  "error": "Błąd podczas pobierania danych."
+}
+```
+
+### Struktura danych
+
+Każdy element listy zawiera:
+
+- **reportId** (string) - Unikalny identyfikator zgłoszenia
+- **name** (string) - Nick oszusta na Discord
+- **id** (string) - Discord ID oszusta
+- **desc** (string) - Powód zgłoszenia
+- **verified** (boolean) - Czy zgłoszenie jest zweryfikowane (zawsze true dla publicznych danych)
+- **createdAt** (string) - Data utworzenia zgłoszenia w formacie ISO 8601
+
+### Ograniczenia
+
+- **Tylko zweryfikowane** zgłoszenia są zwracane
+- **Brak danych osobowych** - tylko nicki i ID Discord
+- **Filtrowane treści** - usunięte wulgaryzmy i wrażliwe dane
+- **Rate limiting** - maksymalnie 100 żądań na minutę
+
+### Przykłady użycia
+
+#### Podstawowe pobranie listy
+```javascript
+const getScammers = async () => {
+  try {
+    const response = await fetch('/api/scammers');
+    const scammers = await response.json();
+    return scammers;
+  } catch (error) {
+    console.error('Błąd podczas pobierania listy oszustów:', error);
+    return [];
+  }
+};
+```
+
+#### Filtrowanie wyników
+```javascript
+const getScammersByKeyword = async (keyword) => {
+  const scammers = await getScammers();
+  return scammers.filter(scammer => 
+    scammer.name.toLowerCase().includes(keyword.toLowerCase()) ||
+    scammer.desc.toLowerCase().includes(keyword.toLowerCase())
+  );
+};
+```
+
+#### Integracja z botem Discord
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.content.startsWith('!scammers')) {
+    try {
+      const response = await fetch('https://zglosscammera.pl/api/scammers');
+      const scammers = await response.json();
+      
+      const embed = {
+        title: `Lista oszustów (${scammers.length})`,
+        description: scammers.slice(0, 10).map(s => 
+          `**${s.name}** (${s.id}) - ${s.desc}`
+        ).join('\n'),
+        color: 0xff0000
+      };
+      
+      message.reply({ embeds: [embed] });
+    } catch (error) {
+      message.reply('Błąd podczas pobierania listy oszustów');
+    }
+  }
+});
+```
+
+#### Sprawdzanie konkretnego użytkownika
+```javascript
+const checkIfScammer = async (userId) => {
+  const scammers = await getScammers();
+  return scammers.find(scammer => scammer.id === userId);
+};
+
+// Użycie
+const scammer = await checkIfScammer('123456789012345678');
+if (scammer) {
+  console.log(`Znaleziono oszusta: ${scammer.name} - ${scammer.desc}`);
+} else {
+  console.log('Użytkownik nie jest na liście oszustów');
+}
+```
+
+### Caching i optymalizacja
+
+#### Lokalne cache
+```javascript
+class ScammerCache {
+  constructor() {
+    this.cache = new Map();
+    this.lastUpdate = 0;
+    this.cacheTimeout = 5 * 60 * 1000; // 5 minut
+  }
+  
+  async getScammers() {
+    const now = Date.now();
+    
+    if (now - this.lastUpdate > this.cacheTimeout) {
+      const response = await fetch('/api/scammers');
+      const scammers = await response.json();
+      
+      this.cache.set('scammers', scammers);
+      this.lastUpdate = now;
+    }
+    
+    return this.cache.get('scammers') || [];
+  }
+}
+
+const scammerCache = new ScammerCache();
+```
+
+#### Batch processing
+```javascript
+const processMultipleUsers = async (userIds) => {
+  const scammers = await getScammers();
+  const scammerIds = new Set(scammers.map(s => s.id));
+  
+  return userIds.map(userId => ({
+    id: userId,
+    isScammer: scammerIds.has(userId),
+    scammerData: scammers.find(s => s.id === userId)
+  }));
+};
+```
+
+### Błędy i rozwiązywanie problemów
+
+#### "Błąd podczas pobierania danych"
+- Sprawdź połączenie internetowe
+- Spróbuj ponownie za chwilę
+- Sprawdź czy serwis jest dostępny
+
+#### Rate limiting
+- Ogranicz częstotliwość żądań
+- Użyj lokalnego cache
+- Rozważ batch processing
+
+#### Pusty wynik
+- To normalne jeśli nie ma zweryfikowanych oszustów
+- Sprawdź czy endpoint zwraca prawidłowy format JSON
+
+### Integracja z innymi systemami
+
+#### Webhook notifications
+```javascript
+// Przykład webhooka, który sprawdza nowych oszustów
+const checkForNewScammers = async () => {
+  const currentScammers = await getScammers();
+  const lastKnownCount = localStorage.getItem('lastScammerCount') || 0;
+  
+  if (currentScammers.length > lastKnownCount) {
+    // Wyslij powiadomienie o nowych oszustach
+    webhook.send({
+      content: `Nowi oszuści w bazie! Aktualna liczba: ${currentScammers.length}`
+    });
+  }
+  
+  localStorage.setItem('lastScammerCount', currentScammers.length);
+};
+```
+
+<Card
+  title="Przetestuj endpoint"
+  icon="play"
+  href="https://zglosscammera.pl/scammers"
+>
+  Zobacz listę oszustów na stronie
+</Card>

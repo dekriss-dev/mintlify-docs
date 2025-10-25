@@ -1,20 +1,20 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Zgłoś Scammera",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#EA043A",
+    "light": "#FF1A4A",
+    "dark": "#C0032A"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Przewodniki",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Wprowadzenie",
             "pages": [
               "index",
               "quickstart",
@@ -22,47 +22,54 @@
             ]
           },
           {
-            "group": "Customization",
+            "group": "Funkcjonalności",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/reporting",
+              "features/checking",
+              "features/proofs",
+              "features/guardly"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Poradniki",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "tutorials/how-to-report",
+              "tutorials/how-to-check",
+              "tutorials/discord-id",
+              "tutorials/appeal"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Bezpieczeństwo",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "security/privacy",
+              "security/terms",
+              "security/data-protection"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Dokumentacja API",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Wprowadzenie do API",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Listy danych",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/scammers",
+              "api-reference/endpoint/servers",
+              "api-reference/endpoint/legit"
+            ]
+          },
+          {
+            "group": "Sprawdzanie osób",
+            "pages": [
+              "api-reference/endpoint/check-user"
             ]
           }
         ]
@@ -71,14 +78,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Strona główna",
+          "href": "https://zglosscammera.pl",
+          "icon": "house"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Discord",
+          "href": "https://discord.gg/zglosscammera",
+          "icon": "discord"
         }
       ]
     }
@@ -90,14 +97,14 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Wsparcie",
+        "href": "mailto:admin@zglosscammera.pl"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Zgłoś oszusta",
+      "href": "https://zglosscammera.pl/report"
     }
   },
   "contextual": {
@@ -114,9 +121,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "discord": "https://discord.gg/zglosscammera",
+      "github": "https://github.com/zglosscammera"
     }
   }
 }
